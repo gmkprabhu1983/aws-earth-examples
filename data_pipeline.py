@@ -124,7 +124,14 @@ def main():
                     s3_info = notification_message['s3']
                     bucket_name = s3_info['bucket']['name']
                     object_key = s3_info['object']['key']
-                    download_s3_object(s3_client, bucket_name, object_key, download_directory)
+                    local_filepath = download_s3_object(s3_client, bucket_name, object_key, download_directory)
+
+                    if local_filepath:
+                        print("Deleting message from queue.")
+                        sqs_client.delete_message(
+                            QueueUrl=queue_url,
+                            ReceiptHandle=message['ReceiptHandle']
+                        )
 
             time.sleep(10) # Avoid excessive polling
         except KeyboardInterrupt:
@@ -133,6 +140,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
 
 
