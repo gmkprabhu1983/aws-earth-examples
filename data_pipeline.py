@@ -85,14 +85,19 @@ def main():
     # Subscribe queue to SNS topic
     subscribe_queue_to_topic(sns_client, sqs_client, topic_arn, queue_arn, queue_url)
 
-    print("
+    print("\nListening for messages on queue: %s" % queue_url)
     while True:
         try:
             # Poll for messages
-            print("Polling for messages...")
+            messages = sqs_client.receive_message(
+                QueueUrl=queue_url,
+                MaxNumberOfMessages=1,
+                WaitTimeSeconds=20
+            )
+
             time.sleep(10) # Avoid excessive polling
         except KeyboardInterrupt:
-            print("
+            print("\nExiting...")
             break
 
 if __name__ == '__main__':
