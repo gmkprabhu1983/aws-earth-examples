@@ -94,6 +94,15 @@ def main():
                 MaxNumberOfMessages=1,
                 WaitTimeSeconds=20
             )
+            if 'Messages' in messages:
+                for message in messages['Messages']:
+                    print("Message received.")
+                    # The message body is a JSON string, so we need to parse it.
+                    message_body = json.loads(message['Body'])
+                    # The actual notification is in the 'Message' field, which is also a JSON string.
+                    notification_message = json.loads(message_body['Message'])
+                    s3_info = notification_message['s3']
+                    print("Bucket: %s, Key: %s" % (s3_info['bucket']['name'], s3_info['object']['key']))
 
             time.sleep(10) # Avoid excessive polling
         except KeyboardInterrupt:
