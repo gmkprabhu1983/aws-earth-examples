@@ -83,6 +83,15 @@ def download_s3_object(s3_client, bucket_name, object_key, local_directory):
         print("Error downloading S3 object: %s" % e)
         return None
 
+def process_data(filepath):
+    """
+    Placeholder function for future data processing.
+    This is where you would add your logic to process the downloaded data,
+    for example, using libraries like iris or xarray.
+    """
+    print("Processing %s..." % filepath)
+    # TODO: Add data processing logic here.
+
 def main():
     """
     Main function to run the data pipeline.
@@ -128,6 +137,7 @@ def main():
 
                     if local_filepath:
                         print("Deleting message from queue.")
+                        process_data(local_filepath)
                         sqs_client.delete_message(
                             QueueUrl=queue_url,
                             ReceiptHandle=message['ReceiptHandle']
