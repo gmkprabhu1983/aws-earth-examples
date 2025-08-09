@@ -30,3 +30,6 @@ def create_sqs_queue(sqs_client, queue_name):
         )['Attributes']['QueueArn']
         return queue_url, queue_arn
     except Exception as e:
+        print("Error creating SQS queue: %s" % e)
+        return None, None
+
