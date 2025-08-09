@@ -1,6 +1,7 @@
 import boto3
 import json
 import os
+import time
 
 def initialize_aws_clients():
     """
@@ -62,5 +63,40 @@ def subscribe_queue_to_topic(sns_client, sqs_client, topic_arn, queue_arn, queue
     except Exception as e:
         print("Error subscribing queue to topic: %s" % e)
         return None
+
+def main():
+    """
+    Main function to run the data pipeline.
+    """
+    # Configuration
+    queue_name = 'met-office-weather-data-queue'
+    topic_arn = 'arn:aws:sns:eu-west-2:021908831235:aws-earth-mo-atmospheric-ukv-prd'
+    
+    # Initialize AWS clients
+    sns_client, sqs_client, s3_client = initialize_aws_clients()
+    if not all([sns_client, sqs_client, s3_client]):
+        return
+
+    # Create SQS queue
+    queue_url, queue_arn = create_sqs_queue(sqs_client, queue_name)
+    if not all([queue_url, queue_arn]):
+        return
+
+    # Subscribe queue to SNS topic
+    subscribe_queue_to_topic(sns_client, sqs_client, topic_arn, queue_arn, queue_url)
+
+    print("
+    while True:
+        try:
+            # Poll for messages
+            print("Polling for messages...")
+            time.sleep(10) # Avoid excessive polling
+        except KeyboardInterrupt:
+            print("
+            break
+
+if __name__ == '__main__':
+    main()
+
 
 
