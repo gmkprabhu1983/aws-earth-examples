@@ -64,6 +64,25 @@ def subscribe_queue_to_topic(sns_client, sqs_client, topic_arn, queue_arn, queue
         print("Error subscribing queue to topic: %s" % e)
         return None
 
+def download_s3_object(s3_client, bucket_name, object_key, local_directory):
+    """
+    Downloads an S3 object to a local directory.
+    """
+    try:
+        if not os.path.exists(local_directory):
+            os.makedirs(local_directory)
+        
+        local_filename = os.path.basename(object_key)
+        local_filepath = os.path.join(local_directory, local_filename)
+        
+        print("Downloading %s to %s" % (object_key, local_filepath))
+        s3_client.download_file(bucket_name, object_key, local_filepath)
+        print("Successfully downloaded %s" % local_filepath)
+        return local_filepath
+    except Exception as e:
+        print("Error downloading S3 object: %s" % e)
+        return None
+
 def main():
     """
     Main function to run the data pipeline.
@@ -71,6 +90,7 @@ def main():
     # Configuration
     queue_name = 'met-office-weather-data-queue'
     topic_arn = 'arn:aws:sns:eu-west-2:021908831235:aws-earth-mo-atmospheric-ukv-prd'
+    download_directory = 'weather_data'
     
     # Initialize AWS clients
     sns_client, sqs_client, s3_client = initialize_aws_clients()
@@ -102,7 +122,9 @@ def main():
                     # The actual notification is in the 'Message' field, which is also a JSON string.
                     notification_message = json.loads(message_body['Message'])
                     s3_info = notification_message['s3']
-                    print("Bucket: %s, Key: %s" % (s3_info['bucket']['name'], s3_info['object']['key']))
+                    bucket_name = s3_info['bucket']['name']
+                    object_key = s3_info['object']['key']
+                    download_s3_object(s3_client, bucket_name, object_key, download_directory)
 
             time.sleep(10) # Avoid excessive polling
         except KeyboardInterrupt:
@@ -111,6 +133,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
 
 
